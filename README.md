@@ -1,2 +1,2 @@
-# paper_ivermectina
+# Paper Ivermectina
 Código para replicar los resultados
