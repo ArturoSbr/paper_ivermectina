@@ -4,12 +4,14 @@ library(MatchIt)
 
 # Cargar datos
 data("lalonde")
+
+# Visualizar datos
 lalonde %>% head()
 
 # Conteo de tratamiento
 lalonde %>% group_by(treat) %>% summarise(count = n())
 
-# Inicializar match
+# Inicializar match con Nearest Neighbor
 match <- matchit(formula = treat ~ age + educ + married + re75,
                  data = lalonde, method = 'nearest', distance = 'glm',
                  link = 'logit', estimad = 'ATT')
@@ -26,15 +28,15 @@ match %>% summary() %>% pluck('nn')
 # Extraer datos emparejados de `match`
 df <- match.data(match)
 
-# Plot
+# Visualizar resultados de emparejamiento
 plot(match, type = "qq", interactive = FALSE,
      which.xs = c("age", "married", "re75"))
 
-# Efecto estimado sin emparejar
+# Diferencia de medias simple sin emparejar
 t0 <- t.test(x = lalonde %>% filter(treat == 0) %>% pull(re78),
              y = lalonde %>% filter(treat == 1) %>% pull(re78))
 
-# Efecto estimado tras emparejar
+# Diferencia de medias simple tras emparejar
 t1 <- t.test(x = df %>% filter(treat == 0) %>% pull(re78),
              y = df %>% filter(treat == 1) %>% pull(re78))
 
