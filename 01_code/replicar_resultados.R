@@ -12,6 +12,7 @@ df <- read.csv('../base.csv') %>% as.data.frame()
 # Modelo 1 ------------------------------------------------------------------------------------
 # Kit por regla administrativa
 df_mod1 <- df %>% mutate(kit = kit_administrativo)
+
 # Match
 match_mod1 <- matchit(
   kit ~
@@ -31,8 +32,11 @@ match_mod1 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod1  <- summary(match_mod1)
+
+# Extraer datos
 match_data_mod1 <- match.data(match_mod1)
+
+# Logit
 glm_mod1 <- glm(
   hosp ~
     kit +
@@ -45,13 +49,16 @@ glm_mod1 <- glm(
   weight = weights,
   family = "binomial"
 )
-# Modelo 2 #############################
-df_mod2 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>% 
+
+# Modelo 2 ------------------------------------------------------------------------------------
+# Kit administrativo y contactados por locatel
+df_mod2 <- df %>% 
   mutate(
     kit = kit_administrativo
   ) %>% 
   filter(contacto_locatel == 1)
+
+# Match
 match_mod2 <- matchit(
   kit ~
     hombre +
@@ -70,7 +77,8 @@ match_mod2 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod2  <- summary(match_mod2)
+
+# Extraer datos
 match_data_mod2 <- match.data(match_mod2)
 glm_mod2 <- glm(
   hosp ~
@@ -84,13 +92,16 @@ glm_mod2 <- glm(
   weight = weights,
   family = "binomial"
 )
-# Modelo 3 #######################################################
-df_mod3 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>%
+
+# Modelo 3 ------------------------------------------------------------------------------------
+# Regla administrativa y no contactados por locatel
+df_mod3 <- df %>% 
   mutate(
     kit = kit_administrativo
   ) %>% 
   filter(contacto_locatel != 1)
+
+# Match
 match_mod3 <- matchit(
   kit ~
     hombre +
@@ -109,8 +120,11 @@ match_mod3 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod3  <- summary(match_mod3)
+
+# Extraer datos
 match_data_mod3 <- match.data(match_mod3)
+
+# Logit
 glm_mod3 <- glm(
   hosp ~
     kit +
@@ -123,13 +137,16 @@ glm_mod3 <- glm(
   weight = weights,
   family = "binomial"
 )
-# Modelo 4 ##################################################
-df_mod4 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>%
+
+# Modelo 4 ------------------------------------------------------------------------------------
+# Reportan haber recibido el kit
+df_mod4 <- df %>%
   mutate(
     kit = kit_administrativo
   ) %>% 
   filter(kit == 1)
+
+# Match
 match_mod4 <- matchit(
   contacto_locatel ~
     hombre +
@@ -148,8 +165,11 @@ match_mod4 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod4  <- summary(match_mod4)
+
+# Match
 match_data_mod4 <- match.data(match_mod4)
+
+# Logit
 glm_mod4 <- glm(
   hosp ~
     contacto_locatel +
@@ -162,9 +182,10 @@ glm_mod4 <- glm(
   weight = weights,
   family = "binomial"
 )
-# Modelo 5 ##################################################
-df_mod5 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>% 
+
+# Modelo 5 ------------------------------------------------------------------------------------
+# Reportan no haber recibido el kit
+df_mod5 <- df %>% 
   mutate(
     kit = kit_administrativo
   ) %>% 
@@ -187,8 +208,11 @@ match_mod5 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod5  <- summary(match_mod5)
+
+# Match
 match_data_mod5 <- match.data(match_mod5)
+
+# Logit
 glm_mod5 <- glm(
   hosp ~
     contacto_locatel +
@@ -202,9 +226,9 @@ glm_mod5 <- glm(
   family = "binomial"
 )
 
-# Modelo 6 ##################################################
-df_mod6 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>% 
+# Modelo 6 ------------------------------------------------------------------------------------
+# Ocupación hosp. entre 80 y 85%
+df_mod6 <- df %>% 
   filter(
     kit_administrativo == 1 | 
       (fecha < "2020-12-28" & sint_graves + sint_leves + sint_mod > 0)
@@ -227,8 +251,11 @@ match_mod6 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod6  <- summary(match_mod6)
+
+# Match
 match_data_mod6 <- match.data(match_mod6)
+
+# Logit
 glm_mod6 <- glm(
   hosp ~
     kit +
@@ -239,9 +266,10 @@ glm_mod6 <- glm(
   weight = weights,
   family = "binomial"
 )
-# Modelo 7 ##########################################################
-df_mod7 <-
-  read_rds(here::here("02_out", "base_publica.rds")) %>% 
+
+# Modelo 7 ------------------------------------------------------------------------------------
+# Kit reportado y datos del 15 de Diciembre en adelante
+df_mod7 <- df %>% 
   filter(fecha >= "2020-12-15") %>% 
   filter(!is.na(kit))
 kit_hosp(df_mod7)
@@ -260,8 +288,11 @@ match_mod7 <- matchit(
     na.omit,
   method = "cem"
 )
-match_sum_mod7  <- summary(match_mod7)
+
+# Match
 match_data_mod7 <- match.data(match_mod7)
+
+# Logit
 glm_mod7 <- glm(
   hosp ~
     kit +
@@ -273,7 +304,8 @@ glm_mod7 <- glm(
   family = "binomial"
 )
 
-# Margins #######################
+
+# Efectos marginales --------------------------------------------------------------------------
 mar_mod1 <- margins(glm_mod1, vcov = vcovHC(glm_mod1, type = "HC0")) %>% 
   broom::tidy()
 mar %>% 
